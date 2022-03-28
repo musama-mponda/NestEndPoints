@@ -1,13 +1,50 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
-import { HobbitionIntern } from './intern.model';
+import { Injectable, Logger } from '@nestjs/common';
+import { HobbitionIntern } from '@prisma/client';
+import { PrismaServiceService } from 'src/prisma-service/prisma-service.service';
 
 @Injectable()
 export class InternService {
-  intern: HobbitionIntern[] = [];
+  constructor(private readonly prismaService: PrismaServiceService) {}
 
-  addIntern(intern: HobbitionIntern): HobbitionIntern {
-    this.intern.push(intern);
+  async createIntern(
+    intern: Omit<HobbitionIntern, 'id'>,
+  ): Promise<HobbitionIntern> {
+    Logger.debug('create inter', intern);
+
+    return await this.prismaService.hobbitionIntern.create({
+      data: intern,
+    });
+  }
+
+  async updateIntern(
+    id: number,
+    intern: Partial<HobbitionIntern>,
+  ): Promise<HobbitionIntern> {
+    return await this.prismaService.hobbitionIntern.update({
+      where: {
+        id: id,
+      },
+      data: { ...intern },
+    });
+  }
+
+  async getAllInterns(): Promise<HobbitionIntern[]> {
+    const foundInterns = await this.prismaService.hobbitionIntern.findMany();
+
+    return foundInterns;
+  }
+
+  async getInternById(internId: number): Promise<HobbitionIntern> {
+    return await this.prismaService.hobbitionIntern.findFirst({
+      where: {
+        id: internId,
+      },
+    });
+  }
+
+  /*addIntern(intern: HobbitionIntern): HobbitionIntern {
+    //this.intern.push(intern);
     return intern;
   }
 
@@ -16,7 +53,7 @@ export class InternService {
   }
 
   getAllIntern(): HobbitionIntern[] {
-    return this.intern;
+    return this.prismaService.HobbitionIntern.findMany();
   }
 
   updateInternService(id: number, { ...intern }): HobbitionIntern {
@@ -24,5 +61,5 @@ export class InternService {
     prevIntern = { ...prevIntern, ...intern };
     this.intern[this.intern.indexOf(prevIntern)] = prevIntern;
     return prevIntern;
-  }
+  }*/
 }
